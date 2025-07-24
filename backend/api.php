@@ -10,7 +10,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 // Database configuration
 $host = "localhost";
 $user = "pwgrupo6_alessandro";
-$pass = "bombardeensaint";
+$pass = "bombardeensaint*";
 $db = "pwgrupo6_restas";
 
 // Connect to database
@@ -50,7 +50,7 @@ function generarEjercicios($conn, $usuario_id) {
             throw new Exception("Prepare failed: " . $conn->error);
         }
         
-        $stmt->bind_param("iiii", $usuario_id, $a, $b, $resultado);
+        $stmt->bind_param("siii", $usuario_id, $a, $b, $resultado);
         if (!$stmt->execute()) {
             throw new Exception("Execute failed: " . $stmt->error);
         }
