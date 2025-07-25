@@ -1,35 +1,118 @@
-import { useState } from 'react'
-import React from "react"
+import { useState } from "react";
+import React from "react";
 
 const Register = ({ onRegister, onSwitchToLogin }) => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [age, setAge] = useState('')
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [birthdate, setBirthdate] = useState("");
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (username.trim() && password.trim() && password === confirmPassword && age) {
-      onRegister({ username, age: parseInt(age), id: Date.now() })
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !username.trim() ||
+      !password.trim() ||
+      password !== confirmPassword ||
+      !birthdate
+    ) {
+      setError("Por favor completa todos los campos correctamente");
+      return;
     }
-  }
 
-  const isFormValid = username.trim() && password.trim() && password === confirmPassword && age && parseInt(age) >= 7 && parseInt(age) <= 12
+    if (!isBirthdateValid()) {
+      setError("Debes tener entre 7 y 12 años para registrarte");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "https://pwgrupo6.miuni.kids/backend/api.php/registrar",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre: username, // Match API expected field name
+            contraseña: password, // Match API expected field name
+            fecha_nacimiento: birthdate, // Match API expected field name
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+      // Handle successful registration
+      console.log("User registered:", data);
+      onRegister({
+        username,
+        birthdate,
+        id: Date.now(),
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      setError(
+        error.message || "Error en el registro. Por favor intenta nuevamente."
+      );
+    }
+  };
+
+  // Calculate age from birthdate to validate (7-12 years old)
+  const calculateAge = (birthdate) => {
+    const birthDate = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
+
+  const isBirthdateValid = () => {
+    if (!birthdate) return false;
+    const age = calculateAge(birthdate);
+    return age >= 7 && age <= 12;
+  };
+
+  const isFormValid =
+    username.trim() &&
+    password.trim() &&
+    password === confirmPassword &&
+    isBirthdateValid();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🌟</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">¡Únete a la Aventura!</h1>
-          <p className="text-gray-600">Crea tu cuenta para empezar a practicar</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            ¡Únete a la Aventura!
+          </h1>
+          <p className="text-gray-600">
+            Crea tu cuenta para empezar a practicar
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-bold text-gray-700 mb-2">
+            <label
+              htmlFor="username"
+              className="block text-sm font-bold text-gray-700 mb-2"
+            >
               Nombre de Usuario
             </label>
             <input
@@ -44,25 +127,42 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
           </div>
 
           <div>
-            <label htmlFor="age" className="block text-sm font-bold text-gray-700 mb-2">
-              Edad
+            <label
+              htmlFor="birthdate"
+              className="block text-sm font-bold text-gray-700 mb-2"
+            >
+              Fecha de Nacimiento
             </label>
-            <select
-              id="age"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
+            <input
+              type="date"
+              id="birthdate"
+              value={birthdate}
+              onChange={(e) => setBirthdate(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg transition-colors"
               required
-            >
-              <option value="">Selecciona tu edad</option>
-              {[7, 8, 9, 10, 11, 12].map(age => (
-                <option key={age} value={age}>{age} años</option>
-              ))}
-            </select>
+              max={
+                new Date(new Date().setFullYear(new Date().getFullYear() - 7))
+                  .toISOString()
+                  .split("T")[0]
+              }
+              min={
+                new Date(new Date().setFullYear(new Date().getFullYear() - 12))
+                  .toISOString()
+                  .split("T")[0]
+              }
+            />
+            {birthdate && !isBirthdateValid() && (
+              <p className="text-red-500 text-sm mt-1">
+                Debes tener entre 7 y 12 años para registrarte
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-bold text-gray-700 mb-2"
+            >
               Contraseña
             </label>
             <div className="relative">
@@ -86,7 +186,10 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-bold text-gray-700 mb-2">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-bold text-gray-700 mb-2"
+            >
               Confirmar Contraseña
             </label>
             <div className="relative">
@@ -96,9 +199,9 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none text-lg transition-colors pr-12 ${
-                  confirmPassword && password !== confirmPassword 
-                    ? 'border-red-500 focus:border-red-500' 
-                    : 'border-gray-300 focus:border-blue-500'
+                  confirmPassword && password !== confirmPassword
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-gray-300 focus:border-blue-500"
                 }`}
                 placeholder="Repite tu contraseña"
                 required
@@ -112,10 +215,15 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
               </button>
             </div>
             {confirmPassword && password !== confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">Las contraseñas no coinciden</p>
+              <p className="text-red-500 text-sm mt-1">
+                Las contraseñas no coinciden
+              </p>
             )}
           </div>
 
+          {error && (
+            <div className="text-red-500 text-center mb-4">{error}</div>
+          )}
           <button
             type="submit"
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg"
@@ -145,7 +253,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Register 
+export default Register;

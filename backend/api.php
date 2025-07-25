@@ -3,9 +3,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT");
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Max-Age: 3600");
 
 // Database configuration
 $host = "localhost";
@@ -21,6 +22,11 @@ if ($conn->connect_error) {
         "error" => "Database connection failed",
         "message" => $conn->connect_error
     ]));
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
 
 // Get request method and endpoint
@@ -67,6 +73,19 @@ function generarEjercicios($conn, $usuario_id) {
     return $ejercicios;
 }
 
+function validateBirthdate($birthdateString) {
+    // Try to create DateTime object from the string
+    $date = DateTime::createFromFormat('Y-m-d', $birthdateString);
+    
+    // Check if date is valid and matches the input format
+    if (!$date || $date->format('Y-m-d') !== $birthdateString) {
+        throw new Exception("Invalid birthdate format. Please use YYYY-MM-DD");
+    }
+    
+    // Convert to MySQL DATE format
+    return $date->format('Y-m-d');
+}
+
 try {
     switch ($method) {
         case 'GET':
@@ -104,7 +123,61 @@ try {
             break;
 
         case 'POST':
-            if ($endpoint == 'reiniciar-ejercicios') {
+            if ($endpoint == 'registrar') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                // Validate required fields
+                if (!isset($data['nombre']) || !isset($data['contraseña']) || !isset($data['fecha_nacimiento'])) {
+                    throw new Exception("Nombre de usuario, contraseña y fecha de nacimiento are required");
+                }
+
+                // Validate and format birthdate
+                try {
+                    $formattedBirthdate = validateBirthdate($data['fecha_nacimiento']);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["error" => $e->getMessage()]);
+                    break;
+                }
+                
+                // Check if username already exists
+                $stmt = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ?");
+                $stmt->bind_param("s", $data['nombre']);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if ($result->num_rows > 0) {
+                    http_response_code(409);
+                    echo json_encode(["error" => "Nombre de usuario ya existe"]);
+                    break;
+                }
+                $stmt->close();
+                
+                // Hash the password
+                $hashedPassword = password_hash($data['contraseña'], PASSWORD_DEFAULT);
+                
+                // Insert new user with properly formatted birthdate
+                $stmt = $conn->prepare("INSERT INTO usuarios (nombre, contraseña, fecha_nacimiento) VALUES (?, ?, ?)");
+                $stmt->bind_param("sss", $data['nombre'], $hashedPassword, $formattedBirthdate);
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Failed to register user: " . $stmt->error);
+                }
+                
+                $user_id = $stmt->insert_id;
+                $stmt->close();
+                
+                // Generate initial exercises for the new user
+                $ejercicios = generarEjercicios($conn, $user_id);
+                
+                echo json_encode([
+                    "success" => true,
+                    "message" => "User registered successfully",
+                    "user_id" => $user_id,
+                    "exercises" => $ejercicios
+                ]);
+            }
+            elseif ($endpoint == 'reiniciar-ejercicios') {
                 $data = json_decode(file_get_contents('php://input'), true);
                 if (!isset($data['usuario_id'])) {
                     throw new Exception("usuario_id is required");
