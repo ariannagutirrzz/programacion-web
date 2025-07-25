@@ -1,28 +1,32 @@
-import { useState } from 'react'
-import React from "react"
-
+import { useState } from "react";
+import React from "react";
 
 const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
-  const [showStats, setShowStats] = useState(false)
-  
-  const totalPages = 5
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-  
-  const completedExercises = Object.values(progress).filter(Boolean).length
-  const totalExercises = totalPages * 8
-  const progressPercentage = Math.round((completedExercises / totalExercises) * 100)
+  const [showStats, setShowStats] = useState(false);
+
+  const totalPages = 3;
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const completedExercises = Object.values(progress).filter(Boolean).length;
+  const totalExercises = totalPages * 8;
+  const progressPercentage = Math.round(
+    (completedExercises / totalExercises) * 100
+  );
 
   const getPageProgress = (pageNumber) => {
-    const pageExercises = Array.from({ length: 8 }, (_, i) => `${pageNumber}-${i + 1}`)
-    const completed = pageExercises.filter(id => progress[id]).length
-    return Math.round((completed / 8) * 100)
-  }
+    const pageExercises = Array.from(
+      { length: 8 },
+      (_, i) => `${pageNumber}-${i + 1}`
+    );
+    const completed = pageExercises.filter((id) => progress[id]).length;
+    return Math.round((completed / 8) * 100);
+  };
 
   const getProgressColor = (percentage) => {
-    if (percentage === 100) return 'bg-green-500'
-    if (percentage >= 50) return 'bg-blue-500'
-    return 'bg-gray-300'
-  }
+    if (percentage === 100) return "bg-green-500";
+    if (percentage >= 50) return "bg-blue-500";
+    return "bg-gray-300";
+  };
 
   return (
     <div className="min-h-screen p-4">
@@ -30,7 +34,9 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-2">🧮 Plataforma de Restas</h1>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              🧮 Plataforma de Restas
+            </h1>
             <p className="text-white text-lg">¡Hola, {user.username}! 👋</p>
           </div>
           <button
@@ -49,10 +55,10 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
               onClick={() => setShowStats(!showStats)}
               className="text-blue-600 hover:text-blue-700 font-bold"
             >
-              {showStats ? 'Ocultar' : 'Ver'} Estadísticas
+              {showStats ? "Ocultar" : "Ver"} Estadísticas
             </button>
           </div>
-          
+
           <div className="flex items-center space-x-4 mb-4">
             <div className="flex-1">
               <div className="flex justify-between text-sm text-gray-600 mb-1">
@@ -60,14 +66,16 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
                 <span>{progressPercentage}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-4">
-                <div 
+                <div
                   className="bg-gradient-to-r from-blue-500 to-green-500 h-4 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{completedExercises}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {completedExercises}
+              </div>
               <div className="text-sm text-gray-600">de {totalExercises}</div>
             </div>
           </div>
@@ -75,7 +83,9 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
           {showStats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               <div className="text-center p-4 bg-blue-50 rounded-xl">
-                <div className="text-2xl font-bold text-blue-600">{completedExercises}</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {completedExercises}
+                </div>
                 <div className="text-sm text-gray-600">Completados</div>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-xl">
@@ -86,7 +96,7 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
               </div>
               <div className="text-center p-4 bg-red-50 rounded-xl">
                 <div className="text-2xl font-bold text-red-600">
-                  {Object.values(progress).filter(v => v === false).length}
+                  {Object.values(progress).filter((v) => v === false).length}
                 </div>
                 <div className="text-sm text-gray-600">Incorrectos</div>
               </div>
@@ -102,48 +112,50 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
 
         {/* Pages Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pages.map(pageNumber => {
-            const pageProgress = getPageProgress(pageNumber)
-            const isCompleted = pageProgress === 100
-            
+          {pages.map((pageNumber) => {
+            const pageProgress = getPageProgress(pageNumber);
+            const isCompleted = pageProgress === 100;
+
             return (
-              <div 
+              <div
                 key={pageNumber}
                 className={`bg-white rounded-2xl shadow-xl p-6 transition-all duration-300 transform hover:scale-105 cursor-pointer ${
-                  isCompleted ? 'ring-2 ring-green-500' : ''
+                  isCompleted ? "ring-2 ring-green-500" : ""
                 }`}
                 onClick={() => onStartExercise(pageNumber)}
               >
                 <div className="text-center">
                   <div className="text-4xl mb-4">
-                    {isCompleted ? '🎉' : '📄'}
+                    {isCompleted ? "🎉" : "📄"}
                   </div>
                   <h3 className="text-xl font-bold text-gray-800 mb-2">
                     Página {pageNumber}
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    {isCompleted ? '¡Completada!' : '8 ejercicios de resta'}
+                    {isCompleted ? "¡Completada!" : "8 ejercicios de resta"}
                   </p>
-                  
+
                   <div className="mb-4">
                     <div className="flex justify-between text-sm text-gray-600 mb-1">
                       <span>Progreso</span>
                       <span>{pageProgress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full transition-all duration-500 ${getProgressColor(pageProgress)}`}
+                      <div
+                        className={`h-3 rounded-full transition-all duration-500 ${getProgressColor(
+                          pageProgress
+                        )}`}
                         style={{ width: `${pageProgress}%` }}
                       ></div>
                     </div>
                   </div>
 
                   <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">
-                    {isCompleted ? 'Repasar' : 'Comenzar'}
+                    {isCompleted ? "Repasar" : "Comenzar"}
                   </button>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
 
@@ -162,7 +174,7 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard 
+export default Dashboard;

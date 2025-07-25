@@ -177,6 +177,43 @@ try {
                     "exercises" => $ejercicios
                 ]);
             }
+            elseif ($endpoint == 'login') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($data['nombre']) || !isset($data['contraseña'])) {
+            http_response_code(400);
+            echo json_encode(["error" => "Username and password are required"]);
+            break;
+        }
+        
+        $stmt = $conn->prepare("SELECT id, nombre, contraseña, fecha_nacimiento FROM usuarios WHERE nombre = ?");
+        $stmt->bind_param("s", $data['nombre']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows == 0) {
+            http_response_code(401);
+            echo json_encode(["error" => "Invalid username or password"]);
+            break;
+        }
+        
+        $user = $result->fetch_assoc();
+        
+        if (!password_verify($data['contraseña'], $user['contraseña'])) {
+            http_response_code(401);
+            echo json_encode(["error" => "Invalid username or password"]);
+            break;
+        }
+        
+        echo json_encode([
+            "success" => true,
+            "user" => [
+                "id" => $user['id'],
+                "username" => $user['nombre'],
+                "birthdate" => $user['fecha_nacimiento'],
+            ]
+        ]);
+    }
             elseif ($endpoint == 'reiniciar-ejercicios') {
                 $data = json_decode(file_get_contents('php://input'), true);
                 if (!isset($data['usuario_id'])) {

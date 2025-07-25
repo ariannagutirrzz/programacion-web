@@ -1,31 +1,75 @@
-import { useState } from 'react'
-import React from "react"
-
+import { useState } from "react";
+import React from "react";
 
 const Login = ({ onLogin, onSwitchToRegister }) => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (username.trim() && password.trim()) {
-      onLogin({ username, id: Date.now() })
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!username.trim() || !password.trim()) {
+      setError("Por favor completa todos los campos");
+      return;
     }
-  }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        "https://pwgrupo6.miuni.kids/backend/api.php/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre: username.trim(),
+            contraseña: password.trim(),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al iniciar sesión");
+      }
+
+      const data = await response.json();
+      onLogin(data.user); // Pass the user data to parent component
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(
+        error.message || "Credenciales incorrectas. Intenta nuevamente."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🧮</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">¡Bienvenido!</h1>
-          <p className="text-gray-600">Practica las restas de manera divertida</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            ¡Bienvenido!
+          </h1>
+          <p className="text-gray-600">
+            Practica las restas de manera divertida
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-bold text-gray-700 mb-2">
+            <label
+              htmlFor="username"
+              className="block text-sm font-bold text-gray-700 mb-2"
+            >
               Nombre de Usuario
             </label>
             <input
@@ -40,7 +84,10 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-bold text-gray-700 mb-2"
+            >
               Contraseña
             </label>
             <div className="relative">
@@ -63,12 +110,16 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
             </div>
           </div>
 
+          {error && (
+            <div className="text-red-500 text-center mb-4">{error}</div>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg"
-            disabled={!username.trim() || !password.trim()}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg disabled:opacity-70"
+            disabled={!username.trim() || !password.trim() || isLoading}
           >
-            Iniciar Sesión
+            {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
         </form>
 
@@ -92,7 +143,7 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login 
+export default Login;
