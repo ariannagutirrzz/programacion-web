@@ -1,12 +1,56 @@
-import { useState } from "react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
+const Dashboard = ({ user, onLogout, onStartExercise }) => {
+  const [exercisesByPage, setExercisesByPage] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [showStats, setShowStats] = useState(false);
 
   const totalPages = 3;
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+  // Fetch exercises for all pages on mount or user change
+  useEffect(() => {
+    if (!user?.id) return;
+
+    setLoading(true);
+    setError(null);
+
+    const fetchExercisesForPage = async (page) => {
+      const url = `https://pwgrupo6.miuni.kids/backend/api.php/ejercicios?usuario_id=${user.id}&pagina=${page}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch exercises for page ${page}`);
+      }
+      const data = await res.json();
+      return data;
+    };
+
+    Promise.all(pages.map((page) => fetchExercisesForPage(page)))
+      .then((results) => {
+        const grouped = {};
+        pages.forEach((page, idx) => {
+          grouped[page] = results[idx];
+        });
+        setExercisesByPage(grouped);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Error loading exercises.");
+      })
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  // Compute a flat progress map: { "page-exerciseIndex": true/false }
+  // Using exercise.completado boolean from your fetched data
+  const progress = {};
+  Object.entries(exercisesByPage).forEach(([page, exercises]) => {
+    exercises.forEach((ex, idx) => {
+      progress[`${page}-${idx + 1}`] = !!ex.completado;
+    });
+  });
+
+  // Calculate completed exercises count and percentages
   const completedExercises = Object.values(progress).filter(Boolean).length;
   const totalExercises = totalPages * 8;
   const progressPercentage = Math.round(
@@ -14,6 +58,7 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
   );
 
   const getPageProgress = (pageNumber) => {
+    // exercises ids for page: pageNumber-1 ... pageNumber-8
     const pageExercises = Array.from(
       { length: 8 },
       (_, i) => `${pageNumber}-${i + 1}`
@@ -24,14 +69,30 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
 
   const getProgressColor = (percentage) => {
     if (percentage === 100) return "bg-green-500";
-    if (percentage >= 50) return "bg-blue-500";
+    if (percentage < 100) return "bg-gradient-to-r from-blue-500 to-green-500";
     return "bg-gray-300";
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white text-xl">
+        Cargando ejercicios...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500 text-xl">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-4">
-      {/* Header */}
       <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-2">
@@ -81,24 +142,12 @@ const Dashboard = ({ user, onLogout, onStartExercise, progress }) => {
           </div>
 
           {showStats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-              <div className="text-center p-4 bg-blue-50 rounded-xl">
-                <div className="text-2xl font-bold text-blue-600">
-                  {completedExercises}
-                </div>
-                <div className="text-sm text-gray-600">Completados</div>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-6">
               <div className="text-center p-4 bg-green-50 rounded-xl">
                 <div className="text-2xl font-bold text-green-600">
                   {Object.values(progress).filter(Boolean).length}
                 </div>
                 <div className="text-sm text-gray-600">Correctos</div>
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-xl">
-                <div className="text-2xl font-bold text-red-600">
-                  {Object.values(progress).filter((v) => v === false).length}
-                </div>
-                <div className="text-sm text-gray-600">Incorrectos</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-xl">
                 <div className="text-2xl font-bold text-gray-600">

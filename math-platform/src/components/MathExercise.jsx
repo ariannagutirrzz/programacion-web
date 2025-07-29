@@ -6,6 +6,7 @@ const MathExercise = ({
   onBackToDashboard,
   onUpdateProgress,
   progress,
+  currentUserId,
 }) => {
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -13,70 +14,149 @@ const MathExercise = ({
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const pageExercises = 8;
+  const [completedCount, setCompletedCount] = useState(null);
+  const [isIncorrect, setIsIncorrect] = useState(false);
 
   // Fetch exercises from PHP API
   useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          `https://pwgrupo6.miuni.kids/backend/api.php/ejercicios/?usuario_id=${currentUserId}&pagina=${pageNumber}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Response is not JSON");
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Transform the API data to match your component's expected format
+        const formattedExercises = data.map((exercise) => ({
+          id: exercise.id, // Use the actual database ID
+          minuend: exercise.minuendo,
+          subtrahend: exercise.sustraendo,
+          correctAnswer: exercise.resultado,
+          page: exercise.pagina, // Include the page number from database
+          completed: exercise.completado,
+        }));
+
+        setCompletedCount(
+          formattedExercises.filter((ex) => ex.completed).length
+        );
+        setExercises(formattedExercises);
+      } catch (error) {
+        console.error("Error fetching exercises:", error.message);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchExercises();
-  }, [pageNumber, progress]);
-  const fetchExercises = async () => {
+  }, [pageNumber, progress, currentUserId]);
+
+  const resetExercises = async () => {
+    // Ask confirmation first
+    const shouldReset = window.confirm(
+      "¿Estás seguro que quieres reiniciar todos los ejercicios de esta página? Se generarán nuevos ejercicios."
+    );
+
+    if (!shouldReset) return; // Exit early if user cancels
+
     try {
+      setLoading(true);
+
+      // Call API to reset exercises first
       const response = await fetch(
-        "https://pwgrupo6.miuni.kids/backend/api.php?usuario_id=1"
+        "https://pwgrupo6.miuni.kids/backend/api.php/reiniciar-ejercicios",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            usuario_id: currentUserId,
+            pagina: pageNumber,
+          }),
+        }
       );
 
-      // First check if the response is OK
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Response is not JSON");
-      }
+      // After reset, fetch the new exercises
+      const fetchResponse = await fetch(
+        `https://pwgrupo6.miuni.kids/backend/api.php/ejercicios/?usuario_id=${currentUserId}&pagina=${pageNumber}`
+      );
+      const newExercises = await fetchResponse.json();
 
-      const data = await response.json();
+      const formattedExercises = newExercises.map((exercise) => ({
+        id: exercise.id,
+        minuend: exercise.minuendo,
+        subtrahend: exercise.sustraendo,
+        correctAnswer: exercise.resultado,
+        page: exercise.pagina,
+        completed: undefined,
+      }));
 
-      // Check if the API returned an error
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setExercises(data.data || data); // Handle different response formats
+      setExercises(formattedExercises);
+      setSelectedExercise(null);
+      setCompletedCount(0);
     } catch (error) {
-      console.error("Error fetching exercises:", error.message);
-      // Optionally show error to user
-      alert("Error loading exercises. Please try again later.");
+      console.error("Error resetting exercises:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const generateExercises = () => {
-      const newExercises = [];
-      for (let i = 1; i <= 8; i++) {
-        const minuend = Math.floor(Math.random() * 90000) + 10000;
-        const maxSubtrahend = minuend - 1000;
-        const subtrahend =
-          Math.floor(Math.random() * (maxSubtrahend - 10000 + 1)) + 10000;
-        const correctAnswer = minuend - subtrahend;
+  const updateProgressInDatabase = async (exerciseId) => {
+    try {
+      const response = await fetch(
+        "https://pwgrupo6.miuni.kids/backend/api.php/actualizar-progreso",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            usuario_id: currentUserId,
+            ejercicio_id: exerciseId,
+          }),
+        }
+      );
 
-        newExercises.push({
-          id: `${pageNumber}-${i}`,
-          minuend,
-          subtrahend,
-          correctAnswer,
-          completed: progress[`${pageNumber}-${i}`] !== undefined,
-          isCorrect: progress[`${pageNumber}-${i}`],
-        });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      setExercises(newExercises);
-    };
 
-    generateExercises();
-  }, [pageNumber, progress]);
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error("Error updating progress:", error);
+      return false;
+    }
+  };
 
   const handleExerciseClick = (exercise) => {
-    if (exercise.completed) return;
+    if (exercise.isCorrect) return;
     setSelectedExercise(exercise);
     setUserAnswer("");
     setShowResult(false);
@@ -101,19 +181,48 @@ const MathExercise = ({
   const handleSubmit = () => {
     if (!userAnswer || isLocked) return;
 
+    exercises.forEach((exercise) => {
+      if (!exercise.isCorrect) {
+        setIsIncorrect(true);
+      }
+    });
+
     const answer = parseInt(userAnswer);
-    const correct = answer === selectedExercise.correctAnswer;
+    const correct = answer === parseInt(selectedExercise.correctAnswer);
 
     setIsCorrect(correct);
     setShowResult(true);
-    setIsLocked(true);
 
+    const updateSuccess = updateProgressInDatabase(selectedExercise.id);
+    console.log("Update success:", updateSuccess);
+
+    if (updateSuccess) {
+      // Only update local state if database update was successful
+      setCompletedCount(
+        exercises.filter((ex) => ex.isCorrect).length + (correct ? 1 : 0)
+      );
+
+      onUpdateProgress(selectedExercise.id, correct);
+
+      setExercises((prev) =>
+        prev.map((ex) =>
+          ex.id === selectedExercise.id
+            ? { ...ex, completed: correct, isCorrect: correct }
+            : ex
+        )
+      );
+    } else {
+      // Handle database update failure
+      console.error("Failed to update progress in database");
+      setIsLocked(false);
+    }
+    // Use the database exercise ID
     onUpdateProgress(selectedExercise.id, correct);
 
     setExercises((prev) =>
       prev.map((ex) =>
         ex.id === selectedExercise.id
-          ? { ...ex, completed: correct, isCorrect: correct } // Only mark as completed if correct
+          ? { ...ex, completed: correct, isCorrect: correct }
           : ex
       )
     );
@@ -138,7 +247,7 @@ const MathExercise = ({
 
   const getExerciseStatus = (exercise) => {
     if (!exercise.completed) return "pending";
-    return exercise.isCorrect ? "completed" : "incorrect";
+    return exercise.completed && "completed";
   };
 
   const getStatusIcon = (status) => {
@@ -151,6 +260,30 @@ const MathExercise = ({
         return "📝";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4 flex items-center justify-center">
+        <div className="text-white text-2xl">Cargando ejercicios...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-4 flex items-center justify-center">
+        <div className="text-red-500 text-xl">
+          Error al cargar los ejercicios: {error}
+        </div>
+        <button
+          onClick={onBackToDashboard}
+          className="ml-4 bg-white hover:bg-gray-100 text-blue-600 font-bold py-2 px-4 rounded"
+        >
+          Volver al Dashboard
+        </button>
+      </div>
+    );
+  }
 
   if (!selectedExercise) {
     return (
@@ -166,12 +299,20 @@ const MathExercise = ({
                 Selecciona un ejercicio para comenzar
               </p>
             </div>
-            <button
-              onClick={onBackToDashboard}
-              className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
-            >
-              Volver al Dashboard
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={resetExercises}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                Reiniciar Ejercicios
+              </button>
+              <button
+                onClick={onBackToDashboard}
+                className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
+              >
+                Volver al Dashboard
+              </button>
+            </div>
           </div>
 
           {/* Exercises Grid */}
@@ -202,9 +343,7 @@ const MathExercise = ({
                     </div>
                     <div className="text-lg text-gray-600">
                       {exercise.completed
-                        ? exercise.isCorrect
-                          ? "¡Correcto!"
-                          : "Intenta de nuevo"
+                        ? "Completado"
                         : "Haz clic para resolver"}
                     </div>
                   </div>
@@ -221,7 +360,9 @@ const MathExercise = ({
               </h3>
               <div className="flex justify-between text-sm text-gray-600 mb-2">
                 <span>Ejercicios completados</span>
-                <span>{exercises.filter((ex) => ex.completed).length} / 8</span>
+                <span>
+                  {completedCount > 0 ? completedCount : 0} / {pageExercises}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
@@ -247,14 +388,15 @@ const MathExercise = ({
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">
-              Ejercicio {selectedExercise.id.split("-")[1]}
+              Ejercicio{" "}
+              {exercises.findIndex((ex) => ex.id === selectedExercise.id) + 1}
             </h1>
-            <p className="text-white text-lg">Página {pageNumber}</p>
+            <p className="text-white text-lg">Página {selectedExercise.page}</p>
           </div>
           <button
             onClick={handleBackToExercises}
             className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
-            disabled={isLocked && !isCorrect}
+            disabled={isIncorrect && !isCorrect}
           >
             Volver a Ejercicios
           </button>
