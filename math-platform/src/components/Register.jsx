@@ -120,7 +120,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus: focus:outline-none text-lg transition-colors"
               placeholder="Elige un nombre divertido"
               required
             />
@@ -138,7 +138,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
               id="birthdate"
               value={birthdate}
               onChange={(e) => setBirthdate(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus: focus:outline-none text-lg transition-colors"
               required
               max={
                 new Date(new Date().setFullYear(new Date().getFullYear() - 7))
@@ -171,7 +171,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg transition-colors pr-12"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus: focus:outline-none text-lg transition-colors pr-12"
                 placeholder="Crea una contraseña segura"
                 required
               />
@@ -201,7 +201,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
                 className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none text-lg transition-colors pr-12 ${
                   confirmPassword && password !== confirmPassword
                     ? "border-red-500 focus:border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
+                    : "border-gray-300 focus:"
                 }`}
                 placeholder="Repite tu contraseña"
                 required
@@ -226,7 +226,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
           )}
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg"
+            className="w-full bg-white hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg"
             disabled={!isFormValid}
           >
             Crear Cuenta
@@ -237,7 +237,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
           <p className="text-gray-600 mb-4">¿Ya tienes una cuenta?</p>
           <button
             onClick={onSwitchToLogin}
-            className="w-full bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500 text-lg"
+            className="w-full bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2  text-lg"
           >
             Iniciar Sesión
           </button>

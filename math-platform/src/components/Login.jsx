@@ -77,7 +77,7 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus: focus:outline-none text-lg transition-colors"
               placeholder="Escribe tu nombre"
               required
             />
@@ -96,7 +96,7 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg transition-colors pr-12"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus: focus:outline-none text-lg transition-colors pr-12"
                 placeholder="Escribe tu contraseña"
                 required
               />
@@ -116,7 +116,7 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg disabled:opacity-70"
+            className="w-full bg-white hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg text-lg disabled:opacity-70"
             disabled={!username.trim() || !password.trim() || isLoading}
           >
             {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
@@ -127,7 +127,7 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
           <p className="text-gray-600 mb-4">¿No tienes una cuenta?</p>
           <button
             onClick={onSwitchToRegister}
-            className="w-full bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500 text-lg"
+            className="w-full bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2  text-lg"
           >
             Crear Cuenta Nueva
           </button>

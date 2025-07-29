@@ -102,7 +102,7 @@ const Dashboard = ({ user, onLogout, onStartExercise }) => {
           </div>
           <button
             onClick={onLogout}
-            className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
+            className="bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 "
           >
             Cerrar Sesión
           </button>
@@ -114,7 +114,7 @@ const Dashboard = ({ user, onLogout, onStartExercise }) => {
             <h2 className="text-2xl font-bold text-gray-800">Tu Progreso</h2>
             <button
               onClick={() => setShowStats(!showStats)}
-              className="text-blue-600 hover:text-blue-700 font-bold"
+              className="text-white hover:text-white font-bold"
             >
               {showStats ? "Ocultar" : "Ver"} Estadísticas
             </button>
@@ -134,7 +134,7 @@ const Dashboard = ({ user, onLogout, onStartExercise }) => {
               </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-white">
                 {completedExercises}
               </div>
               <div className="text-sm text-gray-600">de {totalExercises}</div>
@@ -199,7 +199,7 @@ const Dashboard = ({ user, onLogout, onStartExercise }) => {
                     </div>
                   </div>
 
-                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">
+                  <button className="w-full bg-white hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">
                     {isCompleted ? "Repasar" : "Comenzar"}
                   </button>
                 </div>

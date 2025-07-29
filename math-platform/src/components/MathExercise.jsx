@@ -277,7 +277,7 @@ const MathExercise = ({
         </div>
         <button
           onClick={onBackToDashboard}
-          className="ml-4 bg-white hover:bg-gray-100 text-blue-600 font-bold py-2 px-4 rounded"
+          className="ml-4 bg-white hover:bg-gray-100 text-white font-bold py-2 px-4 rounded"
         >
           Volver al Dashboard
         </button>
@@ -308,7 +308,7 @@ const MathExercise = ({
               </button>
               <button
                 onClick={onBackToDashboard}
-                className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
+                className="bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 "
               >
                 Volver al Dashboard
               </button>
@@ -395,7 +395,7 @@ const MathExercise = ({
           </div>
           <button
             onClick={handleBackToExercises}
-            className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
+            className="bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 "
             disabled={isIncorrect && !isCorrect}
           >
             Volver a Ejercicios
@@ -422,7 +422,7 @@ const MathExercise = ({
             {/* Answer Display */}
             <div className="mb-8">
               <div className="text-2xl text-gray-600 mb-2">Tu respuesta:</div>
-              <div className="text-4xl font-bold text-blue-600 bg-gray-100 rounded-xl p-4 min-h-[80px] flex items-center justify-center">
+              <div className="text-4xl font-bold text-black bg-gray-100 rounded-xl p-4 min-h-[80px] flex items-center justify-center">
                 {userAnswer || "?"}
               </div>
             </div>
@@ -449,7 +449,7 @@ const MathExercise = ({
             <div className="flex justify-center space-x-4 mb-8">
               <button
                 onClick={handleSubmit}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg"
+                className="bg-white hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg"
                 disabled={!userAnswer || isLocked}
               >
                 Verificar Respuesta
@@ -458,7 +458,7 @@ const MathExercise = ({
               {showResult && isCorrect && (
                 <button
                   onClick={handleNextExercise}
-                  className="bg-white hover:bg-gray-100 text-blue-600 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-500"
+                  className="bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 "
                 >
                   {exercises.filter((ex) => !ex.completed).length > 1
                     ? "Siguiente Ejercicio"
@@ -479,7 +479,7 @@ const MathExercise = ({
               <button
                 key={number}
                 onClick={() => handleNumberClick(number)}
-                className="bg-white hover:bg-blue-50 text-2xl font-bold text-gray-800 rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-gray-200 transition-all duration-200 transform hover:scale-110 hover:shadow-xl"
+                className="bg-white hover:bg-white text-2xl font-bold text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-gray-200 transition-all duration-200 transform hover:scale-110 hover:shadow-xl"
                 disabled={selectedExercise.isCorrect}
               >
                 {number}
@@ -494,7 +494,7 @@ const MathExercise = ({
             </button>
             <button
               onClick={() => handleNumberClick(0)}
-              className="bg-white hover:bg-blue-50 text-2xl font-bold text-gray-800 rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-gray-200 transition-all duration-200 transform hover:scale-110 hover:shadow-xl"
+              className="bg-white hover:bg-white text-2xl font-bold text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-gray-200 transition-all duration-200 transform hover:scale-110 hover:shadow-xl"
               disabled={selectedExercise.isCorrect}
             >
               0

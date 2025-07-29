@@ -15,6 +15,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Estilos específicos para inputs para asegurar texto visible */
+input, textarea, select {
+  color: #000000;
+  background-color: #ffffff;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
