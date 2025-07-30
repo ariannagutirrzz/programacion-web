@@ -156,7 +156,7 @@ const MathExercise = ({
   };
 
   const handleExerciseClick = (exercise) => {
-    if (exercise.isCorrect) return;
+    if (exercise.completed) return;
     setSelectedExercise(exercise);
     setUserAnswer("");
     setShowResult(false);
@@ -408,14 +408,13 @@ const MathExercise = ({
             <div className="text-6xl mb-6">🧮</div>
             <div className="text-4xl font-bold text-gray-800 mb-8">
               <div className="mb-4">
-                <div className="text-right font-mono">
+                <div className="text-center font-mono">
                   {selectedExercise.minuend}
                 </div>
-                <div className="text-right font-mono">
+                <div className="text-center font-mono">
                   - {selectedExercise.subtrahend}
                 </div>
                 <div className="border-b-4 border-gray-800 mt-2"></div>
-                <div className="text-right font-mono mt-2">?</div>
               </div>
             </div>
 
