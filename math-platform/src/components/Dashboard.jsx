@@ -102,7 +102,7 @@ const Dashboard = ({ user, onLogout, onStartExercise }) => {
           </div>
           <button
             onClick={onLogout}
-            className="bg-white hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 "
+            className="bg-black hover:bg-gray-100 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg border-2 "
           >
             Cerrar Sesión
           </button>
