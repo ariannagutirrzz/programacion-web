@@ -4,6 +4,7 @@
   font-family: "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  font-size: 20px;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -16,12 +17,15 @@
 }
 
 /* Estilos específicos para inputs para asegurar texto visible */
-input, textarea, select {
+input,
+textarea,
+select {
   color: #000000;
   background-color: #ffffff;
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: #6b7280;
 }
 
@@ -58,7 +62,7 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
     color: #213547;
     background-color: #ffffff;
