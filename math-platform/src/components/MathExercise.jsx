@@ -165,7 +165,7 @@ const MathExercise = ({
 
   const handleNumberClick = (number) => {
     if (isLocked) return;
-    setUserAnswer((prev) => prev + number.toString());
+    setUserAnswer((prev) => number.toString() + prev);
   };
 
   const handleClear = () => {
@@ -175,7 +175,7 @@ const MathExercise = ({
 
   const handleDelete = () => {
     if (isLocked) return;
-    setUserAnswer((prev) => prev.slice(0, -1));
+    setUserAnswer((prev) => prev.slice(1));
   };
 
   const handleSubmit = () => {
